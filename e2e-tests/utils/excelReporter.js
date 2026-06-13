@@ -59,6 +59,23 @@ class ExcelReporter extends Mocha.reporters.Base {
 
       await workbook.xlsx.writeFile('selenium-report.xlsx');
       console.log('Excel report saved to selenium-report.xlsx');
+
+      // Write to GitHub Actions Step Summary if running in CI
+      if (process.env.GITHUB_STEP_SUMMARY) {
+        const fs = require('fs');
+        let summaryMd = '## E2E Selenium Test Results\n\n';
+        summaryMd += `**Total Tests:** ${this.results.length} | **Failed:** ${failures}\n\n`;
+        summaryMd += '| Status | Suite | Test Name | Duration |\n';
+        summaryMd += '|--------|-------|-----------|----------|\n';
+        
+        this.results.forEach(res => {
+          const statusIcon = res.Status === 'PASSED' ? '✅' : '❌';
+          summaryMd += `| ${statusIcon} ${res.Status} | ${res.Suite} | ${res.TestName} | ${res.Duration} |\n`;
+        });
+        
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summaryMd);
+      }
+
     } catch (e) {
       console.error('Failed to generate Excel report:', e);
     } finally {
