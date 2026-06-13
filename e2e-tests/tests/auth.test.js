@@ -22,24 +22,22 @@ describe('Authentication Suite', function () {
   // Splash Screen Tests
   describe('Splash Screen Navigation', function () {
     it('Should load the splash screen', async function () {
-      await driver.get(`${BASE_URL}/`);
+      await driver.get(`${BASE_URL}/#/`);
       const title = await driver.getTitle();
-      expect(title).to.include('BrainBattle'); // Assuming title contains this
+      expect(title).to.include('Brain Battle'); 
     });
 
-    it('Should navigate to Login from Splash', async function () {
-      await driver.get(`${BASE_URL}/`);
-      // Fallback selectors, adjust as needed based on actual HTML
-      const loginBtn = await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Login') or contains(text(), 'Log In')]")), 5000);
-      await loginBtn.click();
+    it('Should auto-navigate to Login from Splash', async function () {
+      await driver.get(`${BASE_URL}/#/`);
+      // Splash screen has a 2.5s auto-redirect timer
       await driver.wait(until.urlContains('#/login'), 5000);
       const url = await driver.getCurrentUrl();
       expect(url).to.include('#/login');
     });
 
-    it('Should navigate to Signup from Splash', async function () {
-      await driver.get(`${BASE_URL}/`);
-      const signupBtn = await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Signup') or contains(text(), 'Sign Up')]")), 5000);
+    it('Should navigate to Signup from Login screen', async function () {
+      await driver.get(`${BASE_URL}/#/login`);
+      const signupBtn = await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Create Account')]")), 5000);
       await signupBtn.click();
       await driver.wait(until.urlContains('#/signup'), 5000);
       const url = await driver.getCurrentUrl();
@@ -58,10 +56,10 @@ describe('Authentication Suite', function () {
       it(test.desc, async function () {
         await driver.get(`${BASE_URL}/#/login`);
         
-        // Find fields (Assuming type="email" and type="password")
-        const emailInput = await driver.wait(until.elementLocated(By.css('input[type="email"]')), 5000);
-        const passInput = await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
-        const submitBtn = await driver.wait(until.elementLocated(By.css('button[type="submit"]')), 5000);
+        // Find fields
+        const emailInput = await driver.wait(until.elementLocated(By.id('login-email')), 5000);
+        const passInput = await driver.wait(until.elementLocated(By.id('login-password')), 5000);
+        const submitBtn = await driver.wait(until.elementLocated(By.id('login-btn')), 5000);
 
         await emailInput.sendKeys(`invalid${test.testId}@example.com`);
         await passInput.sendKeys(`wrongpass${test.testId}`);
