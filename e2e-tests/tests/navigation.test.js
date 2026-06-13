@@ -29,9 +29,18 @@ describe('Navigation & Profile Suite', function () {
     routes.forEach(route => {
       it(`Should navigate to ${route.name} route without crashing`, async function () {
         await driver.get(`${BASE_URL}/#${route.path}`);
-        await driver.wait(until.urlContains('#' + route.path), 5000);
-        const url = await driver.getCurrentUrl();
-        expect(url).to.include('#' + route.path);
+        
+        if (route.name === 'Home' || route.name === 'Profile') {
+          // Protected routes should redirect to login
+          await driver.wait(until.urlContains('#/login'), 5000);
+          const url = await driver.getCurrentUrl();
+          expect(url).to.include('#/login');
+        } else {
+          // Public routes should stay on their path
+          await driver.wait(until.urlContains('#' + route.path), 5000);
+          const url = await driver.getCurrentUrl();
+          expect(url).to.include('#' + route.path);
+        }
       });
     });
 
