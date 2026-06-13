@@ -1,0 +1,53 @@
+name: E2E Selenium Tests
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (Frontend & Tests)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        working-directory: ./
+        run: npm install
+
+      - name: Start Frontend in Background
+        working-directory: ./
+        run: npm run dev -- --host 127.0.0.1 &
+        env:
+          VITE_API_URL: https://brainbattlewebbackend.onrender.com
+
+      - name: Wait for Frontend to be ready
+        run: |
+          echo "Waiting for frontend..."
+          npx wait-on tcp:127.0.0.1:5173 --timeout 30000
+
+      - name: Install Test Dependencies
+        working-directory: ./e2e-tests
+        run: npm install
+
+      - name: Run E2E Node.js Selenium Tests (100+ Cases)
+        working-directory: ./e2e-tests
+        run: npm test
+        env:
+          TEST_BASE_URL: http://127.0.0.1:5173/brainbattlewebfrontend
+
+      - name: Upload Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-test-report
+          path: e2e-tests/selenium-report.xlsx
+          retention-days: 7
